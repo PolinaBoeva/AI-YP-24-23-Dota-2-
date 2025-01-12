@@ -8,4 +8,3 @@ fastapi[standard]
 uvicorn
 pydantic-settings
 pydantic
-logging

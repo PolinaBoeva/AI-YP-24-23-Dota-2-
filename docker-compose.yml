@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile.fastapi
+    ports:
+      - "8000:8000"  # Прокидываем порт FastAPI
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+    networks:
+      - app_network
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    ports:
+      - "8501:8501"  # Прокидываем порт Streamlit
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8501
+    networks:
+      - app_network
+    depends_on:
+      - fastapi  # Убедитесь, что Streamlit будет запускаться после FastAPI
+
+networks:
+  app_network:
+    driver: bridge
