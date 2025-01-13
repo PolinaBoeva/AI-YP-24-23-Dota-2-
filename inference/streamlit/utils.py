@@ -31,6 +31,7 @@ def get_catboost_params():
     hyperparameters["l2_leaf_reg"] = st.number_input(
         "L2 Leaf Regularization", value=3, min_value=1, max_value=10
     )
+    hyperparameters["verbose"] = 100
     return hyperparameters
 
 

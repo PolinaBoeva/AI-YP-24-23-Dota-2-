@@ -94,9 +94,7 @@ class DataCleaner:
         )
 
         # Получение match_id, где в Radiant или Dire >= 2 игроков с invalid значениями
-        invalid_match_ids_radiant = invalid_radiant_counts[
-            invalid_radiant_counts >= 2
-        ].index
+        invalid_match_ids_radiant = invalid_radiant_counts[invalid_radiant_counts >= 2].index
         invalid_match_ids_dire = invalid_dire_counts[invalid_dire_counts >= 2].index
 
         return invalid_match_ids_radiant.union(invalid_match_ids_dire)
@@ -266,12 +264,8 @@ class DataPreprocessor:
             - pd.Series: Медианные значения для отсутствующих данных игроков.
         """
         # Сохранение данных только за последний матч для каждого account_id (необходимо в дальнейшем для преобразование данных от пользователя).
-        df_last_player_stats = self.df_train_aggregated.copy().drop_duplicates(
-            subset="account_id", keep="last"
-        )
-        df_last_player_stats["account_id"] = df_last_player_stats["account_id"].astype(
-            float
-        )
+        df_last_player_stats = self.df_train_aggregated.copy().drop_duplicates(subset="account_id", keep="last")
+        df_last_player_stats["account_id"] = df_last_player_stats["account_id"].astype(float)
         numeric_columns = self.df_train_aggregated.select_dtypes(include=["number"])
         missing_player_data = numeric_columns.median()
         return df_last_player_stats, missing_player_data
@@ -291,9 +285,7 @@ class DataPreprocessor:
         columns_to_stats = self.PLAYER_STATS_COLUMNS + ["account_id"]
 
         # Получение последних статистические данные игроков и данных о недостающих значениях.
-        df_last_player_stats, missing_player_data = (
-            self.get_player_previous_last_stats()
-        )
+        df_last_player_stats, missing_player_data = self.get_player_previous_last_stats()
 
         df_test_agg = pd.merge(
             df_test_agg,
@@ -304,9 +296,7 @@ class DataPreprocessor:
 
         # Заполнение пропусков значениями медиан из тренировочных данных.
         for column in self.PLAYER_STATS_COLUMNS:
-            df_test_agg[column] = df_test_agg[column].fillna(
-                missing_player_data[column]
-            )
+            df_test_agg[column] = df_test_agg[column].fillna(missing_player_data[column])
 
         return df_test_agg[columns_to_keep]
 
@@ -355,11 +345,9 @@ class DataPreprocessor:
         ]
 
         # Расчет скользящего среднего по переменным для каждого account_id.
-        df_players_agg[[f"previous_{col}_avr" for col in group_cols]] = (
-            df_players_agg.groupby(groupby_cols)[group_cols].transform(
-                lambda x: x.shift().expanding().mean()
-            )
-        )
+        df_players_agg[[f"previous_{col}_avr" for col in group_cols]] = df_players_agg.groupby(groupby_cols)[
+            group_cols
+        ].transform(lambda x: x.shift().expanding().mean())
 
     def _aggregate_team_stats(self, df_players_agg: pd.DataFrame) -> pd.DataFrame:
         """
@@ -378,9 +366,7 @@ class DataPreprocessor:
         radiant_stats = self._calculate_team_stats(
             radiant_df, "team_1", self.PLAYER_STATS_COLUMNS, aggregate_functions
         )
-        dire_stats = self._calculate_team_stats(
-            dire_df, "team_2", self.PLAYER_STATS_COLUMNS, aggregate_functions
-        )
+        dire_stats = self._calculate_team_stats(dire_df, "team_2", self.PLAYER_STATS_COLUMNS, aggregate_functions)
         df_team = pd.merge(radiant_stats, dire_stats, on="match_id")
 
         return df_team
@@ -412,10 +398,7 @@ class DataPreprocessor:
         aggregated = team_df.groupby("match_id").agg(aggregation_dict)
 
         # Переименование колонок для того, чтобы явно указать команду и функцию агрегации
-        aggregated.columns = [
-            f"{col}_{team_name}_{agg_func}"
-            for col, agg_func in aggregated.columns.to_flat_index()
-        ]
+        aggregated.columns = [f"{col}_{team_name}_{agg_func}" for col, agg_func in aggregated.columns.to_flat_index()]
 
         aggregated.reset_index(inplace=True)
 
@@ -464,9 +447,7 @@ class PredictionDataFetcher:
         df_team = self.data_preprocessing.transform(df_upload)
         return df_team
 
-    def _data_preprocessing_from_dataframe(
-        self, df_upload: pd.DataFrame
-    ) -> pd.DataFrame:
+    def _data_preprocessing_from_dataframe(self, df_upload: pd.DataFrame) -> pd.DataFrame:
         """
         Предобработка данных из DataFrame: преобразует данные о матче и игроках в формат необходимый для агрегации.
 
@@ -478,13 +459,23 @@ class PredictionDataFetcher:
         """
         # Преобразование DataFrame из широкого формата в длинный, где 'slot' — это идентификаторы игроков в матче,
         # а 'account_id' — идентификаторы аккаунтов, привязанных к слотам.
-        df_upload = df_upload.copy().melt(
-            id_vars=["match_id"], var_name="slot", value_name="account_id"
+        df_upload = df_upload.drop(
+            columns=[
+                "hero_name_0",
+                "hero_name_1",
+                "hero_name_2",
+                "hero_name_3",
+                "hero_name_4",
+                "hero_name_128",
+                "hero_name_129",
+                "hero_name_130",
+                "hero_name_131",
+                "hero_name_132",
+            ]
         )
+        df_upload = df_upload.copy().melt(id_vars=["match_id"], var_name="slot", value_name="account_id")
         df_upload["slot"] = df_upload["slot"].str.extract("(\d+)")
-        df_upload["isRadiant"] = df_upload["slot"].apply(
-            lambda x: 1 if 0 <= int(x) <= 4 else 0
-        )
+        df_upload["isRadiant"] = df_upload["slot"].apply(lambda x: 1 if 0 <= int(x) <= 4 else 0)
         df_upload["account_id"] = df_upload["account_id"].astype(float)
         return df_upload
 
@@ -502,14 +493,10 @@ class PredictionDataFetcher:
 
         # Добавление информации об игроках команд
         for player in match.radiant:
-            data.append(
-                {"match_id": 1, "account_id": player.account_id, "isRadiant": 1}
-            )
+            data.append({"match_id": 1, "account_id": player.account_id, "isRadiant": 1})
 
         for player in match.dire:
-            data.append(
-                {"match_id": 1, "account_id": player.account_id, "isRadiant": 0}
-            )
+            data.append({"match_id": 1, "account_id": player.account_id, "isRadiant": 0})
 
         df = pd.DataFrame(data)
         return df

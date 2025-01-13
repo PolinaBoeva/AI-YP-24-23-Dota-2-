@@ -4,6 +4,9 @@ data/*/*.csv
 # Models
 catboost_info/
 
+# Experiments
+experiments/
+
 # Vscode
 .vscode/
 
