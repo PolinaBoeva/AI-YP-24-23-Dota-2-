@@ -13,6 +13,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Копируем только необходимые папки
 COPY inference/streamlit /app
 
+# Создаем директорию для логов
+RUN mkdir -p /app/logs/streamlit
+
 # Открываем порт для Streamlit
 EXPOSE 8501
 

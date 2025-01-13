@@ -88,7 +88,7 @@ async def predict(request: Annotated[SinglePredictRequest, Body()]):
 async def predict_csv(request: Annotated[PredictCsvRequest, File()]):
     logger.info(f"POST /api/v1/models/predict_csv: {request.filename}")
     predict_result = models_service.predict_csv(request)
-    logger.info(f"Predict result: {predict_result}")
+    logger.info(f"Получены предсказания для {len(predict_result.predictions)} матчей")
     return PredictCsvResponse(predictions=predict_result)
 
 

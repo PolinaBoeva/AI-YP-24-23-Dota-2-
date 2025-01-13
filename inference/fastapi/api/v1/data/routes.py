@@ -18,5 +18,5 @@ data_service = DataService()
 async def get_account_ids():
     logger.info("GET request /api/v1/data/account_ids")
     account_ids = data_service.get_account_ids()
-    logger.info(f"Account IDs: {account_ids}")
+    logger.info(f"Loaded account IDs: {len(account_ids)}")
     return AccountIdsListResponse(account_ids=account_ids)

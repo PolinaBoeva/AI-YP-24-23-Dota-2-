@@ -1,10 +1,8 @@
 import pandas as pd
 import plotly.express as px
-import logging
+import streamlit_logging
 
-# Настройка логирования
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = streamlit_logging.get_logger(__name__)
 
 
 # Гистограммы распределения значений признаков по матчам
@@ -20,7 +18,6 @@ def plot_metric_histogram(data, columns_to_plot, selected_metric):
         labels={selected_column: selected_metric},
         nbins=30,
     )
-    return fig
 
     fig.update_layout(bargap=0, xaxis_title="Номер матча", yaxis_title=selected_metric)
     logger.info("Гистограмма успешно построена.")
@@ -59,9 +56,7 @@ def create_distribution_plot(df_player, variable):
     logger.info(f"Создание гистограммы распределения для переменной: {variable}.")
 
     if variable in df_player.columns:
-        fig = px.histogram(
-            df_player, x=variable, title=f"Распределение {variable} по игроку"
-        )
+        fig = px.histogram(df_player, x=variable, title=f"Распределение {variable} по игроку")
         logger.info("Гистограмма распределения успешно построена.")
         return fig
     else:
@@ -136,9 +131,7 @@ def create_winrate_pie_chart(df):
     radiant_wins = df[df["isRadiant"] == 1]["win"].sum()
     dire_wins = df[df["isRadiant"] == 0]["win"].sum()
 
-    win_data = pd.DataFrame(
-        {"Команда": ["Radiant", "Dire"], "Победы": [radiant_wins, dire_wins]}
-    )
+    win_data = pd.DataFrame({"Команда": ["Radiant", "Dire"], "Победы": [radiant_wins, dire_wins]})
     fig = px.pie(win_data, names="Команда", values="Победы")
     logger.info("Круговая диаграмма побед команд успешно построена.")
     return fig
