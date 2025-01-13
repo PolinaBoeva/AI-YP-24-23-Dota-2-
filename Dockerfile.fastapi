@@ -1,0 +1,28 @@
+# Используем официальный образ Python
+FROM python:3.10-slim
+
+# Устанавливаем рабочую директорию
+WORKDIR /app
+
+# Копируем файл с зависимостями
+COPY requirements.txt ./
+
+# Устанавливаем зависимости
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Копируем папки с проектом
+COPY predictive_models_dota2 /app/predictive_models_dota2
+COPY inference/fastapi /app/inference/fastapi
+COPY data /app/data
+
+# Создаем директорию для логов
+RUN mkdir -p /app/logs/fastapi
+
+# Устанавливаем PYTHONPATH
+ENV PYTHONPATH=/app:/app/predictive_models_dota2:/app/inference/fastapi
+
+# Открываем порт для FastAPI
+EXPOSE 8000
+
+# Запускаем FastAPI
+CMD ["uvicorn", "inference.fastapi.app:app", "--host", "0.0.0.0", "--port", "8000"]
